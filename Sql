@@ -1,0 +1,63 @@
+create database biblioteca;
+show databases;
+use biblioteca; 
+
+CREATE	table cliente (
+id_cliente int not null auto_increment,
+cod_cliente varchar (50) not null,
+dni varchar (15) not null,
+nom_soc varchar(100) not null,
+apell_soc varchar(100) not null,
+tel_soc varchar(100) not null,
+primary key (id_cliente)
+); 
+
+CREATE TABLE autor (
+id_autor int not null auto_increment,
+nom_autor varchar (50) not null,
+nacion_ varchar (50) not null,
+primary key (id_autor)
+); 
+
+
+CREATE TABLE autor (
+id_autor int not null auto_increment,
+nom_autor varchar (50) not null,
+nacion_ varchar (50) not null,
+primary key (id_autor)
+); 
+
+CREATE TABLE editorial (
+id_edit int not null auto_increment,
+nom_edit varchar (50) not null,
+nacion_edit varchar (50) not null,
+primary key (id_edit)
+); 
+
+
+CREATE TABLE categorias (
+id_categ int not null auto_increment,
+nom_categ varchar (50) not null,
+primary key (id_categ)
+); 
+
+CREATE TABLE libros (
+id_libro int not null auto_increment,
+cod_libro int not null,
+nom_autor varchar (50) not null,
+año int not null ,
+categ varchar (50) not null,
+id_edit int not null, FOREIGN KEY (id_edit) REFERENCES  editorial(id_edit),
+id_autor int not null, FOREIGN KEY (id_autor) REFERENCES  autor(id_autor),
+id_categ int not null, FOREIGN KEY (id_categ) REFERENCES  categorias(id_categ),
+primary key (id_libro)
+); 
+
+CREATE TABLE prestamo (
+id_pres int not null auto_increment,
+fecha_pres date,
+fecha_devo date, 
+id_cliente int not null, FOREIGN KEY (id_cliente) REFERENCES  cliente(id_cliente),
+id_libro int not null, FOREIGN KEY (id_libro) REFERENCES  libros(id_libro),
+primary key (id_pres)
+); 
