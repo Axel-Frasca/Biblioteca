@@ -20,13 +20,6 @@ primary key (id_autor)
 ); 
 
 
-CREATE TABLE autor (
-id_autor int not null auto_increment,
-nom_autor varchar (50) not null,
-nacion_ varchar (50) not null,
-primary key (id_autor)
-); 
-
 CREATE TABLE editorial (
 id_edit int not null auto_increment,
 nom_edit varchar (50) not null,
