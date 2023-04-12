@@ -3,7 +3,6 @@ show databases;
 use biblioteca; 
 
 CREATE	table cliente (
-## id_cliente int not null auto_increment,
 cod_cliente varchar (50) not null,
 dni varchar (15) not null,
 nom_soc varchar(100) not null,
@@ -12,9 +11,7 @@ tel_soc varchar(100) not null,
 primary key (cod_cliente)
 ); 
 
-
 CREATE TABLE autor (
-## id_autor int not null auto_increment,
 cod_autor varchar (50) not null,
 nom_autor varchar (50) not null,
 nacion_ varchar (50) not null,
@@ -22,9 +19,7 @@ primary key (cod_autor)
 ); 
 
 
-
 CREATE TABLE editorial (
-# id_edit int not null auto_increment,
 cod_edito varchar (50) not null,
 nom_edit varchar (50) not null,
 nacion_edit varchar (50) not null,
@@ -33,14 +28,12 @@ primary key (cod_edito)
 
 
 CREATE TABLE categorias (
-#id_categ int not null auto_increment,
 cod_categ varchar (50) not null,
 nom_categ varchar (50) not null,
 primary key (cod_categ)
 ); 
 
 CREATE TABLE libros (
-## id_libro int not null auto_increment,
 cod_libro varchar (100)  not null,
 titulo varchar (100) not null,
 cod_autor varchar (100) not null, CONSTRAINT FOREIGN KEY (cod_autor) REFERENCES  autor(cod_autor),
@@ -50,16 +43,12 @@ categ  varchar (100) not null,
 cod_categ varchar (100) not null, CONSTRAINT FOREIGN KEY (cod_categ) REFeRENCES  categorias(cod_categ),
 cod_edito varchar (100) not null, CONSTRAINT FOREIGN KEY (cod_edito) REFERENCES  editorial(cod_edito),
 editorial varchar (100) not null,
-# id_edit int not null,CONSTRAINT FOREIGN KEY (id_edit) REFERENCES  editorial(id_edit),
-# id_autor int not null,CONSTRAINT FOREIGN KEY (id_autor) REFERENCES  autor(id_autor),
-# id_categ int not null, CONSTRAINT FOREIGN KEY (id_categ) REFeRENCES  categorias(id_categ),
 primary key (cod_libro)
 ); 
 
 
-
 CREATE TABLE prestamo (
-cod_pres int not null auto_increment,
+cod_pres varchar (100) not null ,
 fecha_pres date,
 fecha_devo date, 
 cod_cliente varchar (100) not null , FOREIGN KEY (cod_cliente) REFERENCES  cliente(cod_cliente),
@@ -67,4 +56,191 @@ cod_libro varchar (100) not null, FOREIGN KEY (cod_libro) REFERENCES  libros(cod
 primary key (cod_pres)
 ); 
 
+######################################################################################################################################################################################################################################
+##Cliente que todavia no devuelve libro##
+
+insert into prestamo (cod_pres, fecha_pres, fecha_devo, cod_cliente, cod_libro)
+values ("F015", "2016-11-11", NULL, "A003" , "E022" );
+
+Select * from prestamo;
+
+
+
+############################################################## CREAR VISTAS ###################################################################################################################
+
+##Vista libros sin codigos##
+
+Select titulo, nom_autor, año , categ, editorial from libros;
+
+create view lista_libros
+as 
+Select titulo, nom_autor, año , categ, editorial from libros;
+
+select * from lista_libros; 
+
+
+####################################################################################################################################################################################################
+
+##Vista libros de los 2000##
+
+Select titulo,  año  from libros
+where año between "2000-1-1" and "2005-1-1"order by año asc;
+
+create view lista_libros2000
+as 
+Select titulo,  año  from libros
+where año between "2000-1-1" and "2005-1-1" order by año asc;
+
+select * from lista_libros2000; 
+
+
+####################################################################################################################################################################################################
+
+##Vista libros de Drama##
+
+Select titulo, categ from libros
+where categ like "%drama%";
+
+create view lista_librosdrama
+as Select titulo, categ from libros
+where categ like "%drama%";
+
+select * from lista_librosdrama; 
+
+
+####################################################################################################################################################################################################
+
+##Vista Autores Argentinos##
+
+Select nom_autor, nacion_ from autor
+where nacion_ like "%Argentino%";
+
+create view autores_argentinos
+as Select nom_autor, nacion_ from autor
+where nacion_ like "%Argentino%";
+
+select * from autores_argentinos;
+
+####################################################################################################################################################################################################
+
+ ##Vista Editorial Planeta y Oceano#
+ 
+
+Select titulo, editorial, categ from libros
+where editorial LIKE "%planeta%" or  editorial LIKE "%oceano%";
+
+
+create view Editorial_planeta_oceano
+as Select titulo, editorial, categ from libros
+where editorial LIKE "%planeta%" or  editorial LIKE "%oceano%";
+
+
+select * from Editorial_planeta_oceano;
+
+
+####################################################################################################################################################################################################
+
+##Funcion 1 esconder telefono socio
+
+create function esconder ( tel_soc VARCHAR (40))
+RETURNS VARCHAR (40)
+DETERMINISTIC 
+RETURN CONCAT(REPEAT('*',LENGTH(tel_soc)-4), SUBSTRING(tel_soc, -4)); 
+  
+SELECT esconder (tel_soc)
+from cliente;
+
+
+####################################################################################################################################################################################################
+
+##Funcion 2 buscar nombre del libro al ingresar id
+
+
+create function obtener_nombre ( id_libro VARCHAR (500))
+RETURNS VARCHAR (500)
+DETERMINISTIC 
+    RETURN (SELECT titulo FROM libros WHERE cod_libro = id_libro );
+      
+    select obtener_nombre("E009");
+    
+	select obtener_nombre("E002");
+    
+    select obtener_nombre("E004");
+
+####################################################################################################################################################################################################
+ 
+ ##PROCEDURE 1 INSERTA UN NUEVO PRESTAMO 
+ 
+DELIMITER $$
+USE `biblioteca`$$
+CREATE PROCEDURE nuevo_prestamo(IN cod_pres varchar(50),IN cod_libro varchar(50), IN cod_cliente varchar(50), IN fecha_pres varchar(50))
+BEGIN
+INSERT INTO prestamo (cod_pres, cod_libro, cod_cliente, fecha_pres) VALUES (cod_pres, cod_libro, cod_cliente, fecha_pres);
+END$$
+
+DELIMITER ;
+
+CALL nuevo_prestamo ("F016","E001","A001", "2016-01-01" ) ;
+
+####################################################################################################################################################################################################
+
+ ##PROCEDURE 2 ORDENA LOS DATOS DE LA TABLE QUE QUERAMOS 
+
+DELIMITER $$
+CREATE PROCEDURE `ordenar_tabla`(IN p_tabla VARCHAR(50), IN p_campo VARCHAR(50), IN p_orden VARCHAR(4))
+BEGIN
+    SET @ordenamiento = CONCAT(p_campo, ' ', p_orden);
+    SET @consulta = CONCAT('SELECT * FROM ', p_tabla, ' ORDER BY ', @ordenamiento);
+    PREPARE stmt FROM @consulta;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END$$
+DELIMITER ;
+
+call ordenar_tabla ("libros","nom_autor","desc" );
+
+call ordenar_tabla ("autor","nom_autor","desc" );
+
+####################################################################################################################################################################################################
+
+##Trigger 1 Evitar que se registren usuarios con el mismo dni
+
+DELIMITER $$
+CREATE TRIGGER `evitar_duplicados` BEFORE INSERT ON `cliente`
+FOR EACH ROW
+BEGIN
+    DECLARE count_dni INT;
+    SELECT COUNT(*) INTO count_dni FROM cliente WHERE dni = NEW.dni;
+    IF count_dni > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El DNI ya existe en la base de datos';
+    END IF;
+END$$
+DELIMITER ;
+
+INSERT INTO cliente 
+VALUES ('A012', ' 00804734X', 'Pablo', "Diaz", "033-2234244");
+
+
+####################################################################################################################################################################################################
+
+##Trigger 2 registra quien agrego un cliente nuevo 
+
+CREATE TABLE reg_cliente (
+    cod_cliente VARCHAR(50),
+    USER VARCHAR(50),
+    timestamp TIMESTAMP
+);
+
+CREATE TRIGGER reg_cliente_insert
+AFTER INSERT ON cliente
+FOR EACH ROW
+    INSERT INTO reg_cliente VALUES (NEW.cod_cliente,USER(), CURRENT_TIMESTAMP());
+
+ 
+SELECT * FROM cliente;
+
+INSERT INTO cliente 
+VALUES ('A012', ' 00804734X', 'Pablo', "Diaz", "033-2234244");
+
+Select * from reg_cliente;
 
